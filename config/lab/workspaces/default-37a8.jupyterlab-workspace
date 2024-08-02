@@ -6,11 +6,10 @@
           "type": "tab-area",
           "currentIndex": 0,
           "widgets": [
-            "notebook:index.ipynb",
-            "notebook:aula17.ipynb"
+            "notebook:index_classes.ipynb",
           ]
         },
-        "current": "notebook:index.ipynb"
+        "current": "notebook:index_classes.ipynb"
       },
       "down": {
         "size": 0,
@@ -50,15 +49,9 @@
         ]
       }
     },
-    "notebook:index.ipynb": {
+    "notebook:index_classes.ipynb": {
       "data": {
-        "path": "index.ipynb",
-        "factory": "Notebook"
-      }
-    },
-    "notebook:aula17.ipynb": {
-      "data": {
-        "path": "aula17.ipynb",
+        "path": "index_classes.ipynb",
         "factory": "Notebook"
       }
     }
