@@ -1,2 +1,7 @@
 .idea/
 .vscode/
+*.o
+*.hi
+*.dyn_o
+*.dyn_hi
+*.ipynb_checkpoints
