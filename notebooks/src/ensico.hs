@@ -1,4 +1,4 @@
-module ENSICO where -- (c) Ensico, 12-Jul-24
+module ENSICO where -- (c) Ensico, 12-Jul-24; 01-Out-24
 
 --import Cp
 import Data.Char
@@ -9,6 +9,27 @@ import Data.List
 chunksOf :: Int -> [a] -> [[a]]
 chunksOf n [] = []
 chunksOf n x = take n x : chunksOf n (drop n x)
+
+--- avoid the genericity of Data.Foldable ----
+
+_length [] = 0
+_length (_:x) = 1 + _length x
+
+_maximum [a] = a
+_maximum (a:x) = max a (_maximum x)
+
+_minimum [a] = a
+_minimum (a:x) = min a (_minimum x)
+
+{--
+
+Then add the following to the starting cell:
+
+length = _length
+minimum = _minimum
+maximum = _maximum
+
+--}
 
 --- composition ---
 
@@ -129,7 +150,7 @@ p2 = snd . divide
 
 --- Auxiliary
 
-pp = putStr
+--pp = putStr
 
 -- esconder:
 
@@ -398,3 +419,21 @@ elfos_codigo x y = map (uncurry elfo) (zip x y)
 
 sequencia_elfos a b = elfos_codigo (codigo a) (codigo b)
 
+--- cartões perfurados
+
+pp = map ad ENSICO.>> concat ENSICO.>> putStr
+     where show' (Just a) = show a
+           show' (Nothing) = ""
+           ad (a,(b,c,d)) = show a ++ "\t|\t" ++ (show b) ++ "\t" ++ (show' c) ++ "\t" ++ (show' d) ++ "\n"
+
+ibm029 = a029 ++ b029 ++ c029 ++ d029 ++ e029 ++ f029 ++ g029 ++ h029
+         where a029 = (['&','-'] ++ ['0'..'9']) # (zip3 ([12,11]++[0..9]) (replicate 12 Nothing) (replicate 12 Nothing))
+               b029 = zip ['A'..'I'] $ zip3 (replicate 9 12) [Just 1,Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8,Just 9] (replicate 9 Nothing)
+               c029 = zip ['J'..'R'] $ zip3 (replicate 9 11) [Just 1,Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8,Just 9] (replicate 9 Nothing)
+               d029 = zip (['/'] ++ ['S'..'Z']) $ zip3 (replicate 9 0) [Just 1,Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8,Just 9] (replicate 9 Nothing)
+               e029 = zip [':','#','@','=','"','['] $ zip3 [2..7] (replicate 6 (Just 8)) (replicate 6 Nothing)
+               f029 = zip ['.','<','(','+','|',']'] $ zip3 (replicate 6 12) [Just 2, Just 3, Just 4, Just 5, Just 6, Just 7] (replicate 6 (Just 8))
+               g029 = zip ['$','*',')',';','^','\\'] $ zip3 (replicate 6 11) [Just 2, Just 3, Just 4, Just 5, Just 6, Just 7] (replicate 6 (Just 8))
+               h029 = zip [',','%','_','>','?',' '] $ zip3 (replicate 6 0) [Just 2, Just 3, Just 4, Just 5, Just 6, Just 7] (replicate 6 (Just 8))
+
+pcm029 msg = msg |> map toUpper |> map (lkp ibm029) |> zip msg
