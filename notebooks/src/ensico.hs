@@ -12,6 +12,7 @@ chunksOf n x = take n x : chunksOf n (drop n x)
 
 --- avoid the genericity of Data.Foldable ----
 
+_length :: [a] -> Int
 _length [] = 0
 _length (_:x) = 1 + _length x
 
@@ -51,6 +52,8 @@ infixr 0 <| -- right associative
 
 -- Basic -----------------------------------
 
+mul = uncurry (*)
+
 (f `is` v) x = (f x) == v
 
 (f `belongs` v) x = (f x) `elem` v
@@ -62,6 +65,8 @@ infixr 0 <| -- right associative
 -- pairing
 
 swap(a,b) = (b,a)
+
+(f .|. g) x = (f x, g x)
 
 split f g x = (f x, g x)
 
@@ -97,6 +102,18 @@ shrink x = nub [ k |-> minimum [ d' | (k',d') <- x , k'==k ] | (k,d) <- x ]
 discard = filter . (not.)
 
 lstr(b,x) = [ (b,a) | a <- x ]
+
+mapfst f = map (f >< id)
+
+mapsnd f = map (id >< f)
+
+--- Sequence rotation -------------------------------------
+
+rotl [] = []
+rotl x = last x : init x
+
+rotr [] = []
+rotr x = tail x ++ [head x]
 
 -----------------
 
@@ -139,6 +156,21 @@ bitflip i x = take (i-1) x ++ aux i (drop (i-1) x) where
 --byte2dec [a] = a
 --byte2dec b   = byte2dec(init b) * 2 + last b
 
+--- bitwise operations
+
+_or (0,0) = 0
+_or (0,1) = 1
+_or (1,0) = 1
+_or (1,1) = 1
+
+_and (0,0) = 0
+_and (0,1) = 0
+_and (1,0) = 0
+_and (1,1) = 1
+
+_not 0 = 1
+_not 1 = 0
+
 --- Functional Programming, part II
 
 help x = splitAt (div (length x) 2) x -- JNO: deprecated, divide does it in general, see below
@@ -150,7 +182,7 @@ p2 = snd . divide
 
 --- Auxiliary
 
---pp = putStr
+pp = putStr
 
 -- esconder:
 
@@ -421,10 +453,10 @@ sequencia_elfos a b = elfos_codigo (codigo a) (codigo b)
 
 --- cartões perfurados
 
-pp = map ad ENSICO.>> concat ENSICO.>> putStr
-     where show' (Just a) = show a
-           show' (Nothing) = ""
-           ad (a,(b,c,d)) = show a ++ "\t|\t" ++ (show b) ++ "\t" ++ (show' c) ++ "\t" ++ (show' d) ++ "\n"
+ppc = map ad ENSICO.>> concat ENSICO.>> putStr
+      where show' (Just a) = show a
+            show' (Nothing) = ""
+            ad (a,(b,c,d)) = show a ++ "\t|\t" ++ (show b) ++ "\t" ++ (show' c) ++ "\t" ++ (show' d) ++ "\n"
 
 ibm029 = a029 ++ b029 ++ c029 ++ d029 ++ e029 ++ f029 ++ g029 ++ h029
          where a029 = (['&','-'] ++ ['0'..'9']) # (zip3 ([12,11]++[0..9]) (replicate 12 Nothing) (replicate 12 Nothing))
@@ -437,3 +469,35 @@ ibm029 = a029 ++ b029 ++ c029 ++ d029 ++ e029 ++ f029 ++ g029 ++ h029
                h029 = zip [',','%','_','>','?',' '] $ zip3 (replicate 6 0) [Just 2, Just 3, Just 4, Just 5, Just 6, Just 7] (replicate 6 (Just 8))
 
 pcm029 msg = msg |> map toUpper |> map (lkp ibm029) |> zip msg
+
+--- códigos de barras
+
+mod10 = flip mod 10
+produto = uncurry (*)
+
+bRule 0 = "\\hskip{0.5mm}"
+bRule x = "\\rule[0mm]{0.5mm}{30mm}"
+
+nRule 0 = "\\hskip{0.5mm}"
+nRule x = "\\rule[5mm]{0.5mm}{25mm}"
+
+bcTeX x = putStrLn("$" ++ (x >>= nRule) ++ "$")
+bcTeX' xs = putStrLn("$" ++ ([1,0,1] >>= bRule) ++ (x >>= nRule) ++ ([0,1,0,1,0] >>= bRule) ++ (y >>= nRule) ++ ([1,0,1] >>= bRule) ++ "$")
+           where (x,y) = splitAt (length xs `div` 2) xs
+
+--- grafos
+
+fase "Portas" = "Fase 1"
+fase "Paredes" = "Fase 1"
+fase "Colocar_portas" = "Fase 2"
+fase "Telhado" = "Fase 2"
+fase "Soalho" = "Fase 2"
+fase "Pintar" = "Fase 3"
+
+tempos x = collect $ map (\((a,b),c) -> (a,c)) x
+
+fases x = map (\(a,b) -> (a,concat b)) $ collect $ map (\(a,b) -> (fase a,b)) x
+
+---
+
+done = putStrLn "Ready!"
