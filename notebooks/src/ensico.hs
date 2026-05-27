@@ -3,7 +3,6 @@ module ENSICO where -- (c) Ensico, 12-Jul-24; 01-Out-24
 --import Cp
 import Data.Char
 import Data.List
-
 -- import Data.List.Split
 
 chunksOf :: Int -> [a] -> [[a]]
@@ -12,9 +11,11 @@ chunksOf n x = take n x : chunksOf n (drop n x)
 
 --- avoid the genericity of Data.Foldable ----
 
-_length :: [a] -> Int
-_length [] = 0
-_length (_:x) = 1 + _length x
+--_length :: [a] -> Int
+--_length :: (Num b, Foldable t) => t a -> b
+_length x = fromIntegral (length x)
+--_length [] = 0
+--_length (_:x) = 1 + _length x
 
 _maximum [a] = a
 _maximum (a:x) = max a (_maximum x)
@@ -99,7 +100,7 @@ conc = uncurry (++)
 
 shrink x = nub [ k |-> minimum [ d' | (k',d') <- x , k'==k ] | (k,d) <- x ]
 
-discard = filter . (not.)
+discard = filter . (Prelude.not.)
 
 lstr(b,x) = [ (b,a) | a <- x ]
 
@@ -168,8 +169,8 @@ _and (0,1) = 0
 _and (1,0) = 0
 _and (1,1) = 1
 
-_not 0 = 1
-_not 1 = 0
+--_not 0 = 1
+--_not 1 = 0
 
 --- Functional Programming, part II
 
@@ -361,6 +362,19 @@ pap m = unJust . (mT m) where unJust (Just a) = a -- partial inspector of simple
 lkp :: Eq a => [(a, t)] -> a -> t
 lkp = pap
 
+--- _Not
+
+class Not a where
+   _not :: a -> a
+
+instance Not Bool where
+   _not True = False
+   _not False = True
+
+instance Not Integer where
+   _not 0 = 1
+   _not 1 = 0
+
 --- divide & conquer
 
 class Divisible a where
@@ -500,4 +514,4 @@ fases x = map (\(a,b) -> (a,concat b)) $ collect $ map (\(a,b) -> (fase a,b)) x
 
 ---
 
-done = putStrLn "Ready!"
+done = putStrLn "Preparado!"
