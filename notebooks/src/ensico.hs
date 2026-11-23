@@ -1,10 +1,13 @@
 module ENSICO where -- (c) Ensico, 12-Jul-24; 01-Out-24
 
---import Cp
 import Data.Char
 import Data.List
--- import Data.List.Split
 
+--import Cp
+ap :: (a -> b,a) -> b
+ap = uncurry ($)
+
+-- import Data.List.Split
 chunksOf :: Int -> [a] -> [[a]]
 chunksOf n [] = []
 chunksOf n x = take n x : chunksOf n (drop n x)
@@ -33,6 +36,10 @@ maximum = _maximum
 
 --}
 
+--- transforma, cf. fadas
+
+magic m  = map (map ap . uncurry zip) . zip m
+
 --- composition ---
 
 (|>) = flip ($)
@@ -49,11 +56,14 @@ infixr 0 <| -- right associative
 
 --- comparison
 
+(=?) :: Eq a => a -> a -> Bool
 (=?) = (==)
 
 -- Basic -----------------------------------
 
 mul = uncurry (*)
+
+add = uncurry (+)
 
 (f `is` v) x = (f x) == v
 
@@ -137,18 +147,6 @@ ascii = dec2byte . ord
 posicao l = ord(l) - 64
 alfabeto n = chr(n+64)
 
-
---dec2bin :: Int -> [Int]
---dec2bin = dec2byte
-
-dec2bin 0 = [0]
-dec2bin n = dec2bin m ++ [b] where (m,b) = (div n 2, mod n 2)
-
-dec2byte :: Int -> [Int]
-dec2byte = reverse . take 8 . (++zeros) . reverse . dec2bin where zeros = 0:zeros
-
-byte2dec xs = sum (map (uncurry (*)) (zip (reverse xs) [ 2^i | i <- [0..length xs] ]))
-
 bitflip i [] = []
 bitflip i x = take (i-1) x ++ aux i (drop (i-1) x) where
    aux i [] = []
@@ -169,8 +167,15 @@ _and (0,1) = 0
 _and (1,0) = 0
 _and (1,1) = 1
 
+xor (0,0) = 0
+xor (0,1) = 1
+xor (1,0) = 1
+xor (1,1) = 0
+
 --_not 0 = 1
 --_not 1 = 0
+
+nand = _not . _and
 
 --- Functional Programming, part II
 
@@ -465,6 +470,33 @@ elfos_codigo x y = map (uncurry elfo) (zip x y)
 
 sequencia_elfos a b = elfos_codigo (codigo a) (codigo b)
 
+--- Binary <-> decimal
+
+bin2dec xs = sum (map (uncurry (*)) (zip (reverse xs) [ 2^i | i <- [0..length xs-1] ]))
+
+dec2bin 0 = [0]
+dec2bin n = dec2bin m ++ [b] where (m,b) = (div n 2, mod n 2)
+
+dec2byte :: Int -> [Int]
+dec2byte = reverse . take 8 . (++zeros) . reverse . dec2bin where zeros = 0:zeros
+
+byte2dec = bin2dec
+
+--- fita perfurada
+
+punchtape x = do { putStrLn ""; mapM pt x ; putStrLn "" }
+   where pt = putStrLn . punchbyte . ensurebyte
+         punchbyte b = "|" ++ map f (take 5 b) ++ "." ++ map f (drop 5 b) ++ "|"
+         f 0 = space ; f 1 = bullet
+         space  = ' '
+         bullet = '\8226'
+         ensurebyte = dec2byte . bin2dec
+
+furafita = punchtape
+
+teletype = furafita . map ascii
+
+     
 --- cartões perfurados
 
 ppc = map ad ENSICO.>> concat ENSICO.>> putStr
@@ -515,3 +547,15 @@ fases x = map (\(a,b) -> (a,concat b)) $ collect $ map (\(a,b) -> (fase a,b)) x
 ---
 
 done = putStrLn "Preparado!"
+
+--- rnet = 'recurrent net' usada na adição em binário
+
+rnet :: ((c, (a,b)) -> (c, c), [a], [b], c) -> [c]
+rnet(f,a,b,c)  = (cons . ripple) (zip a b) 
+    where ripple = mapAccumR (curry f) c
+          cons(a,x) = a : x
+
+---
+divmod = uncurry divMod
+---
+
